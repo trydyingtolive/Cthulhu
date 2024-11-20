@@ -9,22 +9,23 @@
         Spacing="25"
             BackgroundColor="SlateGrey">
             <Image
-            x:Name="ImageItem"
-            Source="cthulhu.png"
-            HeightRequest="500"
-            VerticalOptions="Center"
-            Aspect="AspectFit">
+                x:Name="ImageItem"
+                Source="cthulhu.png"
+                HeightRequest="500"
+                VerticalOptions="Center"
+                Aspect="AspectFit">
 
             </Image>
             <Label
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            TextColor="#1f1f1f"
-            FontSize="Large"
-            Margin="0,-100,0,0"
-            FontAttributes="Bold"
-            FontFamily="sans-serif"
-            Text="Cthulhu is hungry for subtitles" />
+                x:Name="lStatus"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                TextColor="#1f1f1f"
+                FontSize="Large"
+                Margin="0,-100,0,0"
+                FontAttributes="Bold"
+                FontFamily="sans-serif"
+                Text="Cthulhu is hungry for subtitles" />
 
     </VerticalStackLayout>
 
