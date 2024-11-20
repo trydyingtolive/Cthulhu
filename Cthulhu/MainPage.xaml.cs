@@ -1,25 +1,55 @@
-﻿namespace Cthulhu
+﻿using System.Diagnostics;
+
+namespace Cthulhu;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    public MainPage()
     {
-        int count = 0;
+        InitializeComponent();
 
-        public MainPage()
+#if WINDOWS
+        Loaded += ( sender, args ) =>
         {
-            InitializeComponent();
-        }
+            this.RegisterDrop( Handler?.MauiContext, async ( path ) =>
+            {
+                var ffmpeg = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "unmanaged/ffmpeg.exe" );
+                var output = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Fixed" );
 
-        private void OnCounterClicked( object sender, EventArgs e )
+
+                var format = path.Split( "." ).Last();
+                output += "." + format;
+
+                if ( File.Exists( output ) )
+                {
+                    File.Delete( output );
+                }
+
+                ProcessStartInfo ProcessInfo;
+                Process Process;
+
+                ProcessInfo = new ProcessStartInfo( ffmpeg, $" -i \"{path}\" -c copy -sn \"{output}\"" );
+                ProcessInfo.CreateNoWindow = true;
+                ProcessInfo.UseShellExecute = false;
+
+                Process = Process.Start( ProcessInfo );
+
+                Process.WaitForExit();
+
+                File.Delete( path );
+                File.Copy( output, path );
+                File.Delete( output );
+
+            } );
+        };
+
+        Unloaded += ( sender, args ) =>
         {
-            count++;
-
-            if ( count == 1 )
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce( CounterBtn.Text );
-        }
+            this.UnRegisterDrop( Handler?.MauiContext );
+        };
+#endif
     }
 
 }
+
+
