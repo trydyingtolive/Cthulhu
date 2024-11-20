@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using Windows.Media.Effects;
+using Windows.Storage.Search;
 
 namespace Cthulhu;
 
@@ -28,6 +29,7 @@ public partial class MainPage : ContentPage
     }
 
     bool isRunning;
+    bool errored= false;
     ConcurrentQueue<string> paths = new ConcurrentQueue<string>();
 
     public async Task EnqueVideo( string path )
@@ -59,6 +61,11 @@ public partial class MainPage : ContentPage
         {
             await ProcessVideo( path );
 
+            if ( errored )
+            {
+                return;
+            }
+
             if ( paths.Count > 1 )
             {
                 MainThread.BeginInvokeOnMainThread( () => { lStatus.Text = $"{paths.Count} are sacrificed"; } );
@@ -77,8 +84,15 @@ public partial class MainPage : ContentPage
 
     public async Task ProcessVideo( string path )
     {
+        
         var ffmpeg = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "unmanaged/ffmpeg.exe" );
-        var output = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Fixed" );
+
+        if (!Directory.Exists( System.IO.Path.Combine( System.IO.Path.GetTempPath(), "Cthulhu") ) )
+        {
+            Directory.CreateDirectory( System.IO.Path.Combine( System.IO.Path.GetTempPath(), "Cthulhu" ) );
+        }
+
+        var output = System.IO.Path.Combine( System.IO.Path.GetTempPath(), "Cthulhu", "Fixed" );
 
 
         var format = path.Split( "." ).Last();
@@ -100,10 +114,21 @@ public partial class MainPage : ContentPage
 
         Process.WaitForExit();
 
+
+        if ( !File.Exists( output ) )
+        {
+            errored = true;
+            MainThread.BeginInvokeOnMainThread( () => { lStatus.Text = $"Choked on {path}"; } );
+            await Task.Delay( 10 );
+            return;
+        }
+
         File.Delete( path );
         File.Copy( output, path );
         File.Delete( output );
     }
+
+
 }
 
 
